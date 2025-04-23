@@ -2,17 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
-const API_KEY = "715bdbf3411649a59d5164955250204";
-const BASE_URL = "http://api.weatherapi.com/v1";
 
 const WeatherApp = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [location, setLocation] = useState("");
-  const [view, setView] = useState("hourly");
-
+  
   const fetchWeather = async (loc) => {
     setLoading(true);
     setError(null);
@@ -20,9 +15,7 @@ const WeatherApp = () => {
       const weatherResponse = await axios.get(`${BASE_URL}/current.json?key=${API_KEY}&q=${loc}`);
       const forecastResponse = await axios.get(`${BASE_URL}/forecast.json?key=${API_KEY}&q=${loc}&days=7`);
 
-      setWeatherData(weatherResponse.data);
-      setForecastData(forecastResponse.data.forecast);
-
+      
       localStorage.setItem("weatherData", JSON.stringify(weatherResponse.data));
       localStorage.setItem("forecastData", JSON.stringify(forecastResponse.data.forecast));
     } catch (err) {
@@ -33,21 +26,13 @@ const WeatherApp = () => {
   };
 
   useEffect(() => {
-    const cachedWeather = localStorage.getItem("weatherData");
-    const cachedForecast = localStorage.getItem("forecastData");
-
-    if (cachedWeather && cachedForecast) {
-      setWeatherData(JSON.parse(cachedWeather));
-      setForecastData(JSON.parse(cachedForecast));
-    } else if (navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           fetchWeather(`${latitude},${longitude}`);
         },
-        () => {
-          setError("Location access denied");
-        }
+        
       );
     }
   }, []);
